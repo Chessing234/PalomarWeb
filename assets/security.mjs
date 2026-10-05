@@ -58,6 +58,8 @@ function digest(value, field) {
 export function isLoopbackHostname(hostname) {
   const normalized = hostname.toLowerCase().replace(/^\[|\]$/g, "");
   if (normalized === "localhost" || normalized === "::1") return true;
+  // URL serializes IPv4-mapped IPv6 hosts as hexadecimal groups.
+  if (/^::ffff:7f[0-9a-f]{2}:[0-9a-f]{1,4}$/.test(normalized)) return true;
   const mapped = normalized.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/);
   if (mapped) return isLoopbackHostname(mapped[1]);
   const octets = normalized.split(".");

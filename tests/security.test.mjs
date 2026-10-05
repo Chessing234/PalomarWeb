@@ -166,6 +166,21 @@ test("loopback development can select an HTTP fixture", () => {
   );
 });
 
+test("mapped loopback fixture URLs survive URL hostname serialization", () => {
+  for (const address of ["127.0.0.1", "127.9.8.7", "127.255.255.255"]) {
+    const location = new URL(`http://[::ffff:${address}]:8000/`);
+    assert.equal(isLoopbackHostname(location.hostname), true);
+    assert.equal(
+      selectDatabaseUrl(location.href, "?database=/fixtures/index.json").href,
+      new URL("/fixtures/index.json", location).href,
+    );
+  }
+  const remote = new URL("http://[::ffff:10.0.0.1]:8000/");
+  assert.equal(isLoopbackHostname(remote.hostname), false);
+  assert.equal(selectDatabaseUrl(remote.href, "?database=/fixtures/index.json").href,
+    DEFAULT_DATABASE);
+});
+
 test("index entry paths are exact descendants of the database prefix", () => {
   const base = databaseBaseFor("https://example.test/database/index.json");
   assert.equal(
